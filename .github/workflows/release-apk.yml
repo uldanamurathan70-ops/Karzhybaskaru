@@ -1,0 +1,40 @@
+name: Publish direct Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/release-apk.yml'
+      - 'app/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build APK
+        run: gradle assembleDebug
+      - name: Publish APK as a direct GitHub Release download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Karzhy Baskaru — Android APK
+          body: "Latest automatically built Android APK. Download KarzhyBaskaru.apk and install it on your Android phone."
+          files: app/build/outputs/apk/debug/app-debug.apk
+          overwrite_files: true
+          make_latest: false
